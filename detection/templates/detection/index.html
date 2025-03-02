@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CycLista: Your Camera-Based Bicycle Counter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      color: #fff;
+    }
+    /* Set black background for video page */
+    body.video-page {
+      background-color: #000;
+    }
+    /* Blurred background using the uploaded video */
+    .bg-blur {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: blur(8px);
+      z-index: -2;
+    }
+    /* Fallback background for landing page */
+    .bg-video {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      min-width: 100%;
+      min-height: 100%;
+      z-index: -1;
+      filter: brightness(50%);
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 0;
+    }
+    .content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding-top: 5%;
+    }
+    .upload-card {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px 30px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+    }
+    .report-section {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 10px;
+      color: #000;
+      max-width: 400px;
+    }
+    .report-section h3 {
+      font-weight: bold;
+    }
+    .stat-item {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #28a745;
+    }
+    .links-section {
+      margin-top: 40px;
+      padding: 10px;
+      border-radius: 10px;
+      display: inline-block;
+      text-align: center; /* Centering the links */
+    }
+    .links-section a {
+      color: #fff;
+      font-size: 16px;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .links-section a:hover {
+      text-decoration: underline;
+    }
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1050;
+    }
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      text-align: center;
+      padding: 10px 0;
+      font-size: 14px;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body class="{% if video_url %}video-page{% endif %}">
+  {% if video_url %}
+    <!-- Blurred background using the uploaded video; no overlay here -->
+    <video autoplay muted loop class="bg-blur">
+      <source src="{{ video_url }}" type="video/mp4">
+      Your browser does not support HTML5 video.
+    </video>
+
+    <div class="container my-4">
+      <button class="btn btn-secondary back-button" onclick="window.location.href='/'">Back</button>
+      <h1 class="text-center mb-4">Real-Time Bicycle Counter</h1>
+      <div class="row">
+        <div class="col-md-8 text-center">
+          <img id="video_stream" src="{% url 'video_feed' %}" alt="Live Video Feed" class="img-fluid" style="max-height:500px;">
+        </div>
+        <div class="col-md-4">
+          <div class="report-section">
+            <h3>Bicycle Count Report</h3>
+            <p>These computations are estimations, representing average statistics from Metro Manila respondents of a survey done in February 2025. 
+            </p>
+            <div class="stat-item">🚲 Bicycles Detected: <span id="bike_count" class="stat-value">0</span></div>
+            <div class="stat-item">⛽ Fuel Cost Saved: <span id="fuel_saved" class="stat-value">₱0</span></div>
+            <div class="stat-item">🔥 Calories Burned: <span id="calories_burned" class="stat-value">0 kcal</span></div>
+            <div class="stat-item">🌱 CO₂ Reduction: <span id="carbon_reduced" class="stat-value">0 kg</span></div>
+            <hr>
+            <p><strong>Last Updated:</strong> <span id="last_updated">-</span></p>
+          </div>
+        </div>
+      </div>
+      <div class="links-section mt-4">
+        <a href="https://example.com/research" target="_blank">Research</a> |
+        <a href="https://example.com/deep-learning-model" target="_blank">Deep Learning Model</a> |
+        <a href="https://example.com/impact-calculation" target="_blank">How Impact Calculation is Made</a> |
+        <a href="https://www.pexels.com/videos/" target="_blank">Download Sample Videos from Pexels</a> |
+        <a href="https://example.com/author" target="_blank">About the Developer</a>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container">
+      <div class="toast" id="videoToast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <strong class="me-auto">Notification</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">📢 Video is finished!</div>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById("video_stream").onended = function () {
+        let toast = new bootstrap.Toast(document.getElementById("videoToast"));
+        toast.show();
+      };
+
+      function updateStats() {
+        fetch("{% url 'bike_count' %}")
+          .then(response => response.json())
+          .then(data => {
+            let bikeCount = data.count;
+            document.getElementById("bike_count").innerText = bikeCount;
+            document.getElementById("fuel_saved").innerText = `₱${(bikeCount * 112).toFixed(2)}`;
+            document.getElementById("calories_burned").innerText = `${(bikeCount * 317).toFixed(0)} kcal`;
+            document.getElementById("carbon_reduced").innerText = `${(bikeCount * 3.74).toFixed(2)} kg`;
+            document.getElementById("last_updated").innerText = new Date().toLocaleTimeString();
+          });
+      }
+      setInterval(updateStats, 500);
+    </script>
+
+  {% else %}
+    <video autoplay muted loop class="bg-video" id="bgVideo">
+      <source src="{% static 'videos/background.mp4' %}" type="video/mp4">
+      Your browser does not support HTML5 video.
+    </video>
+    <div class="overlay"></div>
+    <div class="content container">
+      <h1 class="display-3">CycLista: Your Camera-Based Bicycle Counter</h1>
+      <p class="lead">Harnessing urban data and smart technology to keep our cities moving.</p>
+      <div class="upload-card">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="video">Upload a Video</label>
+            <input type="file" name="video" id="video" accept="video/*" class="form-control-file" required>
+          </div>
+          <button type="submit" class="btn btn-success">Start Counting</button>
+        </form>
+      </div>
+      <div class="links-section mt-4">
+        <a href="https://example.com/research" target="_blank">Research</a> |
+        <a href="https://example.com/deep-learning-model" target="_blank">Deep Learning Model</a> |
+        <a href="https://example.com/impact-calculation" target="_blank">How Impact Calculation is Made</a> |
+        <a href="https://www.pexels.com/videos/" target="_blank">Download Sample Videos from Pexels</a> |
+        <a href="https://example.com/author" target="_blank">About the Developer</a>
+      </div>
+    </div>
+  {% endif %}
+
+  <footer>
+    Mark Jerome De Chavez © 2025
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const bgVideo = document.getElementById("bgVideo");
+      if (bgVideo) {
+        bgVideo.playbackRate = 24.0;
+      }
+    });
+  </script>
+</body>
+</html>
