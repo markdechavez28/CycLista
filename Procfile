@@ -1,1 +1,1 @@
-web: gunicorn bike_counter.wsgi:application --log-file -
+web: gunicorn --timeout 120 your_project.wsgi:application
