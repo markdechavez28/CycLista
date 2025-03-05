@@ -1,1 +1,1 @@
-web: gunicorn bike_counter.wsgi --log-file -
+web: gunicorn bike_counter.wsgi:application --log-file -
