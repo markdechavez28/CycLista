@@ -28,13 +28,7 @@ DEBUG = True
 
 import os
 
-ALLOWED_HOSTS = [
-    "cyc-lista-18mu.vercel.app",
-    "cyc-lista-18mu-kb70k9y7y-markdechavez28s-projects.vercel.app",
-    "localhost",
-    "127.0.0.1"
-]
-
+ALLOWED_HOSTS = ["*"]
 
 # Render deployment configuration: disable DEBUG and configure static files when on Render
 if os.environ.get("RENDER"):
