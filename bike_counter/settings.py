@@ -26,7 +26,10 @@ SECRET_KEY = 'django-insecure-&##+i_-_0ebbfy=to&tix*vap+*kekx8exuko)t6is018m$g_d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+import os
+
+ALLOWED_HOSTS = ["your-vercel-project.vercel.app", "127.0.0.1"]
+
 
 # Render deployment configuration: disable DEBUG and configure static files when on Render
 if os.environ.get("RENDER"):
@@ -46,6 +49,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -123,6 +127,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
