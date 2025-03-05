@@ -27,22 +27,21 @@ CARBON_REDUCTION = 3.74  # kg CO2 per bicycle
 def upload_video(request):
     """Handles video upload and renders the detection page."""
     global VIDEO_PATH, bicycle_ids
+    # Always refresh the count on page load
+    bicycle_ids = set()
 
     if request.method == "POST" and request.FILES.get("video"):
         video = request.FILES["video"]
         fs = FileSystemStorage()
         video_filename = fs.save(video.name, video)
         VIDEO_PATH = fs.path(video_filename)
-
         # Reset bicycle IDs for a new video
         bicycle_ids = set()
-
         return render(
             request,
             "detection/index.html",
             {"video_url": VIDEO_PATH},
         )
-
     return render(request, "detection/index.html")
 
 
@@ -89,19 +88,19 @@ def video_feed(request):
                 if track.is_confirmed() and track.track_id is not None:
                     bicycle_ids.add(track.track_id)
 
-                ltrb = track.to_ltwh()
-                x1, y1, w, h = map(int, ltrb)
-                x2, y2 = x1 + w, y1 + h
+                    ltrb = track.to_ltwh()
+                    x1, y1, w, h = map(int, ltrb)
+                    x2, y2 = x1 + w, y1 + h
 
-                cv2.putText(
-                    frame,
-                    f"ID {track.track_id}",
-                    (x1, y1 - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 255, 255),
-                    2,
-                )
+                    cv2.putText(
+                        frame,
+                        f"ID {track.track_id}",
+                        (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (0, 255, 255),
+                        2,
+                    )
 
             # Calculate stats
             num_bicycles = len(bicycle_ids)
@@ -109,7 +108,7 @@ def video_feed(request):
             total_calories = num_bicycles * CALORIES_BURNED
             total_carbon_reduction = num_bicycles * CARBON_REDUCTION
 
-            # Display statistics
+            # Display statistics with up to 2 decimals
             cv2.putText(
                 frame,
                 f"Bicycle Count: {num_bicycles}",
@@ -121,7 +120,7 @@ def video_feed(request):
             )
             cv2.putText(
                 frame,
-                f"Fuel Saved: PHP {total_fuel_saved}",
+                f"Fuel Saved: PHP {total_fuel_saved:.2f}",
                 (30, 80),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,
@@ -130,7 +129,7 @@ def video_feed(request):
             )
             cv2.putText(
                 frame,
-                f"Calories Burned: {total_calories} kcal",
+                f"Calories Burned: {total_calories:.2f} kcal",
                 (30, 110),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,
@@ -139,7 +138,7 @@ def video_feed(request):
             )
             cv2.putText(
                 frame,
-                f"Carbon Reduction: {total_carbon_reduction} kg",
+                f"Carbon Reduction: {total_carbon_reduction:.2f} kg",
                 (30, 140),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1,
@@ -180,4 +179,3 @@ def get_bike_count(request):
             "carbon_reduction": total_carbon_reduction,
         }
     )
-

@@ -26,8 +26,12 @@ SECRET_KEY = 'django-insecure-&##+i_-_0ebbfy=to&tix*vap+*kekx8exuko)t6is018m$g_d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
+# Render deployment configuration: disable DEBUG and configure static files when on Render
+if os.environ.get("RENDER"):
+    DEBUG = False
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Application definition
 
