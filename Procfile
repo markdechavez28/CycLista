@@ -1,1 +1,1 @@
-web: gunicorn --workers=2 --preload --timeout=120 your_project.wsgi:application
+web: gunicorn bike_counter.wsgi:application --bind 0.0.0.0:$PORT --timeout 120 --log-file -
