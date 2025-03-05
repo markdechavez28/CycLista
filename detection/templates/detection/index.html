@@ -164,9 +164,9 @@ function updateStats() {
     .then(data => {
       let bikeCount = data.count;
       document.getElementById("bike_count").innerText = bikeCount;
-      document.getElementById("fuel_saved").innerText = `₱${(bikeCount * 112).toFixed(2)}`;
-      document.getElementById("calories_burned").innerText = `${(bikeCount * 317).toFixed(2)} kcal`;
-      document.getElementById("carbon_reduced").innerText = `${(bikeCount * 3.74).toFixed(2)} kg`;
+      document.getElementById("fuel_saved").innerText = `₱${(bikeCount * 111.93).toFixed(2)}`;
+      document.getElementById("calories_burned").innerText = `${(bikeCount * 317.44).toFixed(2)} kcal`;
+      document.getElementById("carbon_reduced").innerText = `${(bikeCount * 3.36).toFixed(2)} kg`;
       document.getElementById("last_updated").innerText = new Date().toLocaleTimeString();
     });
 }
