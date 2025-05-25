@@ -1,9 +1,9 @@
-import os
+import os 
 import cv2
 import numpy as np
+import tempfile
 from django.shortcuts import render
 from django.http import StreamingHttpResponse, JsonResponse
-from django.core.files.storage import FileSystemStorage
 from ultralytics import YOLO
 from deep_sort_realtime.deepsort_tracker import DeepSort
 
@@ -25,16 +25,18 @@ CARBON_REDUCTION = 3.74  # kg CO2 per bicycle
 
 
 def upload_video(request):
-    """Handles video upload and renders the detection page."""
+    """Handles video upload and renders the detection page without permanently saving the video."""
     global VIDEO_PATH, bicycle_ids
     # Always refresh the count on page load
     bicycle_ids = set()
 
     if request.method == "POST" and request.FILES.get("video"):
         video = request.FILES["video"]
-        fs = FileSystemStorage()
-        video_filename = fs.save(video.name, video)
-        VIDEO_PATH = fs.path(video_filename)
+        # Save the uploaded video to a temporary file
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp_file:
+            tmp_file.write(video.read())
+            tmp_file.flush()
+            VIDEO_PATH = tmp_file.name
         # Reset bicycle IDs for a new video
         bicycle_ids = set()
         return render(
